@@ -23,7 +23,7 @@ pub struct Connection {
 
 impl Connection {
     pub fn new() -> Result<Connection, Error> {
-        let mut client = Client::connect(POSTGRES, NoTls)?;
+        let client = Client::connect(POSTGRES, NoTls)?;
 
         let cache_dir = dirs::cache_dir().expect("cache directory not found")
                                          .join("deb-rust-sec");
@@ -68,6 +68,11 @@ impl Connection {
     }
 
     pub fn search(&mut self, release: &str) -> Result<Vec<(String, String)>, Error> {
+        if let Ok(rows_opt) = self.check_cache(release) {
+            if let Some(rows) = rows_opt {
+                return Ok(rows);
+            }
+        }
         let rows = self.client.query("select source::text, version::text from sources where bin like 'librust%' and release=$1;",
                                         &[&release.to_string()])?;
 
