@@ -1,6 +1,7 @@
 use crate::db::Connection;
 
 use std::env;
+use regex::Regex;
 
 mod db;
 
@@ -29,7 +30,13 @@ fn main() {
         let vuln_crate = vuln.metadata.package.as_str().replace("_", "-");
         for package in &packages {
             let name = &package.0.replace("_", "-")[5..];
-            if vuln_crate == name {
+            let ver_exist = if name.len() > vuln_crate.len() && name.starts_with(&vuln_crate) {
+                let re = Regex::new(r"^\d.\d").unwrap();
+                re.is_match(&name[(vuln_crate.len() + 1)..])
+            } else {
+                false
+            };
+            if vuln_crate == name || ver_exist {
                 let v:Vec<&str> = package.1.split("-").collect();
                 let is_version_affected = vuln.versions.is_vulnerable(&rustsec::version::Version::parse(v[0]).unwrap());
                 if is_version_affected {
