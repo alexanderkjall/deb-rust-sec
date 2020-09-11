@@ -11,7 +11,7 @@ const POSTGRES: &str = "postgresql://udd-mirror:udd-mirror@udd-mirror.debian.net
 const CACHE_EXPIRE: Duration = Duration::from_secs(90 * 60);
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CacheEntry {
+struct CacheEntry {
     pub from: SystemTime,
     pub list: Vec<(String, String)>,
 }

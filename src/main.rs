@@ -4,6 +4,7 @@ use std::env;
 use regex::Regex;
 
 mod db;
+mod tracker;
 
 fn main() {
     let dist = if env::args().len() > 1 {
@@ -11,6 +12,9 @@ fn main() {
     } else {
         "sid".to_string()
     };
+
+    let tracker = tracker::Tracker::new().unwrap();
+    let debian = tracker.info().unwrap();
 
     let advisory_db_repo = rustsec::Repository::fetch(rustsec::repository::DEFAULT_URL, rustsec::Repository::default_path(), false)
         .unwrap_or_else(|e| {
