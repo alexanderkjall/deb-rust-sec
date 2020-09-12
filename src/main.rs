@@ -31,6 +31,16 @@ fn main() {
     let packages = conn.search(&dist).unwrap();
 
     for vuln in database.iter() {
+        if let Some(col) = vuln.metadata.collection {
+            if col == rustsec::collection::Collection::Rust {
+                continue
+            }
+        }
+        if let Some(info) = &vuln.metadata.informational {
+            if *info == rustsec::advisory::informational::Informational::Unmaintained {
+                continue
+            }
+        }
         let vuln_crate = vuln.metadata.package.as_str().replace("_", "-");
         for package in &packages {
             let name = &package.0.replace("_", "-")[5..];
@@ -44,10 +54,11 @@ fn main() {
                 let v:Vec<&str> = package.1.split("-").collect();
                 let is_version_affected = vuln.versions.is_vulnerable(&rustsec::version::Version::parse(v[0]).unwrap());
                 if is_version_affected {
-                    print!("{} : {}, ({}) {}", package.0, package.1, is_version_affected, &vuln.metadata.id.as_str());
+                    print!("{} : {} {}", package.0, package.1, &vuln.metadata.id.as_str());
                     for id in &vuln.metadata.aliases {
                         print!(" {}", id.as_str());
                     }
+                    print!(" {}", debian.contains_key(&package.0));
                     println!();
                 }
             }
