@@ -15,3 +15,4 @@ dirs = "2.0"
 rustsec = "0.21.0"
 regex = "1"
 reqwest = { version = "0.10", features = ["blocking", "json"] }
+prettytable-rs = "0.8.0"

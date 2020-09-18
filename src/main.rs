@@ -2,6 +2,7 @@ use crate::db::Connection;
 
 use std::env;
 use regex::Regex;
+use prettytable::{Attr, Table, Row, Cell};
 
 mod db;
 mod tracker;
@@ -30,6 +31,14 @@ fn main() {
     let mut conn = Connection::new().unwrap();
     let packages = conn.search(&dist).unwrap();
 
+    let mut table = Table::new();
+    table.add_row(Row::new(vec![
+        Cell::new("Source package").with_style(Attr::Bold),
+        Cell::new("Version").with_style(Attr::Bold),
+        Cell::new("Rust Advisory").with_style(Attr::Bold),
+        Cell::new("Other Id").with_style(Attr::Bold),
+        Cell::new("Bug in Debian").with_style(Attr::Bold),]
+    ));
     for vuln in database.iter() {
         if let Some(col) = vuln.metadata.collection {
             if col == rustsec::collection::Collection::Rust {
@@ -53,15 +62,19 @@ fn main() {
             if vuln_crate == name || ver_exist {
                 let v:Vec<&str> = package.1.split("-").collect();
                 let is_version_affected = vuln.versions.is_vulnerable(&rustsec::version::Version::parse(v[0]).unwrap());
+                let mut row = vec![];
                 if is_version_affected {
-                    print!("{} : {} {}", package.0, package.1, &vuln.metadata.id.as_str());
-                    for id in &vuln.metadata.aliases {
-                        print!(" {}", id.as_str());
-                    }
-                    print!(" {}", debian.contains_key(&package.0));
-                    println!();
+                    row.push(Cell::new(&package.0));
+                    row.push(Cell::new(&package.1));
+                    row.push(Cell::new(&vuln.metadata.id.as_str()));
+                    row.push(Cell::new(&vuln.metadata.aliases.iter().map(|id| id.to_string() + "\n").collect::<String>()));
+                    row.push(Cell::new(&format!("{}", debian.contains_key(&package.0))));
+                }
+                if row.len() > 0 {
+                    table.add_row(Row::new(row));
                 }
             }
         }
     }
+    table.printstd();
 }
