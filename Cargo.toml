@@ -1,8 +1,11 @@
 [package]
 name = "deb-rust-sec"
+description = "A tool that lists rust security advisories that affect Debian"
 version = "0.1.0"
-authors = ["Alexander Kjäll <alexander.kjaell@schibsted.com>"]
+authors = ["Alexander Kjäll <alexander.kjall@gmail.com>"]
 edition = "2018"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/alexanderkjall/deb-rust-sec"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
