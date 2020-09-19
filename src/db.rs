@@ -1,11 +1,9 @@
 use anyhow::Error;
 use postgres::{Client, NoTls};
-use serde::{Serialize, Deserialize};
-use serde_json;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use std::time::{Duration, SystemTime};
-
 
 const POSTGRES: &str = "postgresql://udd-mirror:udd-mirror@udd-mirror.debian.net/udd";
 const CACHE_EXPIRE: Duration = Duration::from_secs(90 * 60);
@@ -25,15 +23,13 @@ impl Connection {
     pub fn new() -> Result<Connection, Error> {
         let client = Client::connect(POSTGRES, NoTls)?;
 
-        let cache_dir = dirs::cache_dir().expect("cache directory not found")
-                                         .join("deb-rust-sec");
+        let cache_dir = dirs::cache_dir()
+            .expect("cache directory not found")
+            .join("deb-rust-sec");
 
         fs::create_dir_all(&cache_dir)?;
 
-        Ok(Connection {
-            client,
-            cache_dir,
-        })
+        Ok(Connection { client, cache_dir })
     }
 
     fn cache_path(&self, release: &str) -> PathBuf {
@@ -57,10 +53,10 @@ impl Connection {
         }
     }
 
-    fn write_cache(&self, release: &str, result: &Vec<(String, String)>) -> Result<(), Error> {
+    fn write_cache(&self, release: &str, result: &[(String, String)]) -> Result<(), Error> {
         let cache = CacheEntry {
             from: SystemTime::now(),
-            list: result.clone(),
+            list: result.to_owned(),
         };
         let buf = serde_json::to_vec(&cache)?;
         fs::write(self.cache_path(release), &buf)?;

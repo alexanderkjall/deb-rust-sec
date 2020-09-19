@@ -1,15 +1,15 @@
 use crate::db::Connection;
 
-use std::env;
+use prettytable::{Attr, Cell, Row, Table};
 use regex::Regex;
-use prettytable::{Attr, Table, Row, Cell};
+use std::env;
 
 mod db;
 mod tracker;
 
 fn main() {
     let dist = if env::args().len() > 1 {
-        env::args().skip(1).next().unwrap()
+        env::args().nth(1).unwrap()
     } else {
         "sid".to_string()
     };
@@ -17,11 +17,15 @@ fn main() {
     let tracker = tracker::Tracker::new().unwrap();
     let debian = tracker.info().unwrap();
 
-    let advisory_db_repo = rustsec::Repository::fetch(rustsec::repository::DEFAULT_URL, rustsec::Repository::default_path(), false)
-        .unwrap_or_else(|e| {
-            eprintln!("couldn't fetch advisory database: {}", e);
-            std::process::exit(1);
-        });
+    let advisory_db_repo = rustsec::Repository::fetch(
+        rustsec::repository::DEFAULT_URL,
+        rustsec::Repository::default_path(),
+        false,
+    )
+    .unwrap_or_else(|e| {
+        eprintln!("couldn't fetch advisory database: {}", e);
+        std::process::exit(1);
+    });
 
     let database = rustsec::Database::load(&advisory_db_repo).unwrap_or_else(|e| {
         eprintln!("error loading advisory database: {}", e);
@@ -37,17 +41,17 @@ fn main() {
         Cell::new("Version").with_style(Attr::Bold),
         Cell::new("Rust Advisory").with_style(Attr::Bold),
         Cell::new("Other Id").with_style(Attr::Bold),
-        Cell::new("Bug in Debian").with_style(Attr::Bold),]
-    ));
+        Cell::new("Bug in Debian").with_style(Attr::Bold),
+    ]));
     for vuln in database.iter() {
         if let Some(col) = vuln.metadata.collection {
             if col == rustsec::collection::Collection::Rust {
-                continue
+                continue;
             }
         }
         if let Some(info) = &vuln.metadata.informational {
             if *info == rustsec::advisory::informational::Informational::Unmaintained {
-                continue
+                continue;
             }
         }
         let vuln_crate = vuln.metadata.package.as_str().replace("_", "-");
@@ -60,17 +64,26 @@ fn main() {
                 false
             };
             if vuln_crate == name || ver_exist {
-                let v:Vec<&str> = package.1.split("-").collect();
-                let is_version_affected = vuln.versions.is_vulnerable(&rustsec::version::Version::parse(v[0]).unwrap());
+                let v: Vec<&str> = package.1.split('-').collect();
+                let is_version_affected = vuln
+                    .versions
+                    .is_vulnerable(&rustsec::version::Version::parse(v[0]).unwrap());
                 let mut row = vec![];
                 if is_version_affected {
                     row.push(Cell::new(&package.0));
                     row.push(Cell::new(&package.1));
                     row.push(Cell::new(&vuln.metadata.id.as_str()));
-                    row.push(Cell::new(&vuln.metadata.aliases.iter().map(|id| id.to_string() + "\n").collect::<String>()));
+                    row.push(Cell::new(
+                        &vuln
+                            .metadata
+                            .aliases
+                            .iter()
+                            .map(|id| id.to_string() + "\n")
+                            .collect::<String>(),
+                    ));
                     row.push(Cell::new(&format!("{}", debian.contains_key(&package.0))));
                 }
-                if row.len() > 0 {
+                if !row.is_empty() {
                     table.add_row(Row::new(row));
                 }
             }

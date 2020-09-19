@@ -19,7 +19,7 @@ struct CacheEntry {
 pub struct Cve {
     pub description: Option<String>,
     pub scope: Option<String>,
-    pub releases: HashMap<String, PackageInfo>
+    pub releases: HashMap<String, PackageInfo>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -27,7 +27,7 @@ pub struct PackageInfo {
     status: String,
     repositories: HashMap<String, String>,
     fixed_version: Option<String>,
-    urgency: String
+    urgency: String,
 }
 
 pub struct Tracker {
@@ -36,14 +36,13 @@ pub struct Tracker {
 
 impl Tracker {
     pub fn new() -> Result<Tracker> {
-        let cache_dir = dirs::cache_dir().expect("cache directory not found")
+        let cache_dir = dirs::cache_dir()
+            .expect("cache directory not found")
             .join("deb-rust-sec");
 
         fs::create_dir_all(&cache_dir)?;
 
-        Ok(Tracker {
-            cache_dir,
-        })
+        Ok(Tracker { cache_dir })
     }
 
     pub fn info(&self) -> Result<HashMap<String, HashMap<String, Cve>>> {
@@ -64,7 +63,7 @@ impl Tracker {
 
         self.write_cache(&body)?;
 
-        return Ok(body);
+        Ok(body)
     }
 
     fn cache_path(&self) -> PathBuf {
