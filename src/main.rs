@@ -18,7 +18,7 @@ fn main() {
     let debian = tracker.info().unwrap();
 
     let advisory_db_repo = rustsec::Repository::fetch(
-        rustsec::repository::DEFAULT_URL,
+        rustsec::repository::git::DEFAULT_URL,
         rustsec::Repository::default_path(),
         false,
     )
@@ -27,7 +27,7 @@ fn main() {
         std::process::exit(1);
     });
 
-    let database = rustsec::Database::load(&advisory_db_repo).unwrap_or_else(|e| {
+    let database = rustsec::Database::load_from_repo(&advisory_db_repo).unwrap_or_else(|e| {
         eprintln!("error loading advisory database: {}", e);
         std::process::exit(1);
     });
@@ -67,7 +67,7 @@ fn main() {
                 let v: Vec<&str> = package.1.split('-').collect();
                 let is_version_affected = vuln
                     .versions
-                    .is_vulnerable(&rustsec::version::Version::parse(v[0]).unwrap());
+                    .is_vulnerable(&rustsec::Version::parse(v[0]).unwrap());
                 let mut row = vec![];
                 if is_version_affected {
                     row.push(Cell::new(&package.0));

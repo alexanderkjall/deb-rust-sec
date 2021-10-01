@@ -15,7 +15,7 @@ anyhow = "1.0"
 serde = { version="1.0", features=["derive"] }
 serde_json = "1.0"
 dirs = "2.0"
-rustsec = "0.21.0"
+rustsec = "0.24.3"
 regex = "1"
 reqwest = { version = "0.10", features = ["blocking", "json"] }
 prettytable-rs = "0.8.0"
