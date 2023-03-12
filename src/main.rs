@@ -45,12 +45,12 @@ fn main() {
     ]));
     for vuln in database.iter() {
         if let Some(col) = vuln.metadata.collection {
-            if col == rustsec::collection::Collection::Rust {
+            if col == rustsec::Collection::Rust {
                 continue;
             }
         }
         if let Some(info) = &vuln.metadata.informational {
-            if *info == rustsec::advisory::informational::Informational::Unmaintained {
+            if *info == rustsec::advisory::Informational::Unmaintained {
                 continue;
             }
         }
