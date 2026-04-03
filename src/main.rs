@@ -3,6 +3,7 @@ use crate::db::Connection;
 use prettytable::{Attr, Cell, Row, Table};
 use regex::Regex;
 use std::env;
+use std::time::Duration;
 
 mod db;
 mod tracker;
@@ -21,6 +22,7 @@ fn main() {
         rustsec::repository::git::DEFAULT_URL,
         rustsec::Repository::default_path(),
         false,
+        Duration::from_secs(0),
     )
     .unwrap_or_else(|e| {
         eprintln!("couldn't fetch advisory database: {}", e);
@@ -43,22 +45,22 @@ fn main() {
         Cell::new("Other Id").with_style(Attr::Bold),
         Cell::new("Bug in Debian").with_style(Attr::Bold),
     ]));
+    let re = Regex::new(r"^\d.\d").unwrap();
     for vuln in database.iter() {
-        if let Some(col) = vuln.metadata.collection {
-            if col == rustsec::Collection::Rust {
-                continue;
-            }
+        if let Some(col) = vuln.metadata.collection
+            && col == rustsec::Collection::Rust
+        {
+            continue;
         }
-        if let Some(info) = &vuln.metadata.informational {
-            if *info == rustsec::advisory::Informational::Unmaintained {
-                continue;
-            }
+        if let Some(info) = &vuln.metadata.informational
+            && *info == rustsec::advisory::Informational::Unmaintained
+        {
+            continue;
         }
         let vuln_crate = vuln.metadata.package.as_str().replace("_", "-");
         for package in &packages {
             let name = &package.0.replace("_", "-")[5..];
             let ver_exist = if name.len() > vuln_crate.len() && name.starts_with(&vuln_crate) {
-                let re = Regex::new(r"^\d.\d").unwrap();
                 re.is_match(&name[(vuln_crate.len() + 1)..])
             } else {
                 false
@@ -72,7 +74,7 @@ fn main() {
                 if is_version_affected {
                     row.push(Cell::new(&package.0));
                     row.push(Cell::new(&package.1));
-                    row.push(Cell::new(&vuln.metadata.id.as_str()));
+                    row.push(Cell::new(vuln.metadata.id.as_str()));
                     row.push(Cell::new(
                         &vuln
                             .metadata

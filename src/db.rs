@@ -64,10 +64,10 @@ impl Connection {
     }
 
     pub fn search(&mut self, release: &str) -> Result<Vec<(String, String)>, Error> {
-        if let Ok(rows_opt) = self.check_cache(release) {
-            if let Some(rows) = rows_opt {
-                return Ok(rows);
-            }
+        if let Ok(rows_opt) = self.check_cache(release)
+            && let Some(rows) = rows_opt
+        {
+            return Ok(rows);
         }
         let rows = self.client.query("select source::text, version::text from sources where bin like 'librust%' and release=$1;",
                                         &[&release.to_string()])?;

@@ -3,7 +3,7 @@ name = "deb-rust-sec"
 description = "A tool that lists rust security advisories that affect Debian"
 version = "0.1.0"
 authors = ["Alexander Kjäll <alexander.kjall@gmail.com>"]
-edition = "2018"
+edition = "2024"
 license = "GPL-3.0-or-later"
 repository = "https://github.com/alexanderkjall/deb-rust-sec"
 
@@ -14,8 +14,8 @@ postgres = "0.19"
 anyhow = "1.0"
 serde = { version="1.0", features=["derive"] }
 serde_json = "1.0"
-dirs = "2.0"
-rustsec = "0.26.4"
+dirs = "6"
+rustsec = "0.32"
 regex = "1"
-reqwest = { version = "0.11", features = ["blocking", "json"] }
+reqwest = { version = "0.13", features = ["blocking", "json"] }
 prettytable-rs = "0.10.0"
